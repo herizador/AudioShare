@@ -2,6 +2,8 @@ const Fastify = require("fastify");
 const fastifyWebsocket = require("@fastify/websocket");
 const fastifyCors = require("@fastify/cors");
 const { createClient } = require("redis");
+const fs = require("fs");
+const path = require("path");
 
 const PORT = process.env.PORT || 3000;
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
@@ -72,6 +74,15 @@ async function start() {
   // Health check
   app.get("/", async () => {
     return { status: "ok", service: "AudioShare Proxy v2", rooms: rooms.size };
+  });
+
+  // Favicon
+  app.get("/favicon.ico", async (req, reply) => {
+    const iconPath = path.join(__dirname, "icon-audioshare.png");
+    const icon = fs.readFileSync(iconPath);
+    reply.header("Content-Type", "image/png");
+    reply.header("Cache-Control", "public, max-age=86400");
+    return reply.send(icon);
   });
 
   // Room creation
