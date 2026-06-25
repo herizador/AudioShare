@@ -1,27 +1,36 @@
-#App
+# ==========================================
+# 📱 REGLAS PARA LA APP (AudioShareApp)
+# ==========================================
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+**/build/
+**/captures/
+**/.externalNativeBuild/
+**/.cxx/
+**/.gradle/
+**/local.properties
+
+# Configuraciones específicas de Android Studio (.idea)
+**/.idea/caches/
+**/.idea/libraries/
+**/.idea/modules.xml
+**/.idea/workspace.xml
+**/.idea/navEditor.xml
+**/.idea/assetWizardSettings.xml
+
+# ==========================================
+# ⚙️ REGLAS PARA EL PROXY Y WEB
+# ==========================================
+**/node_modules/
+**/dist/
+
+# ==========================================
+# 📝 ARCHIVOS GLOBALES Y DEL SISTEMA
+# ==========================================
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-
-#Proxy
-
-
-#Web
-dist/
-node_modules/
-
-
+Thumbs.db
 prompt.txt
 AGENTS.md
+
+# Archivos de entorno locales (Por seguridad en Render)
+**/.env
+**/.env.local
