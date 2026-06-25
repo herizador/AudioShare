@@ -7,6 +7,8 @@
   <meta name="description" content="Transmisión de audio en tiempo real" />
   <meta name="theme-color" content="#000000" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" href="/icons/icon-audioshare.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-audioshare.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -47,25 +49,12 @@
     #homeScreen { gap: 28px; }
 
     .wave-logo {
-      width: 72px; height: 72px;
+      width: 84px; height: 84px;
       display: flex; align-items: center; justify-content: center;
-      gap: 4px;
     }
-    .wave-bar {
-      width: 4px;
-      border-radius: 2px;
-      background: linear-gradient(to top, #7C3AED, #A78BFA);
-      animation: waveAnim 1.4s ease-in-out infinite;
-    }
-    .wave-bar:nth-child(1) { height: 20px; animation-delay: 0s; }
-    .wave-bar:nth-child(2) { height: 34px; animation-delay: 0.15s; }
-    .wave-bar:nth-child(3) { height: 46px; animation-delay: 0.3s; }
-    .wave-bar:nth-child(4) { height: 34px; animation-delay: 0.45s; }
-    .wave-bar:nth-child(5) { height: 20px; animation-delay: 0.6s; }
-
-    @keyframes waveAnim {
-      0%, 100% { transform: scaleY(0.6); opacity: 0.5; }
-      50% { transform: scaleY(1); opacity: 1; }
+    .wave-logo img {
+      width: 100%; height: 100%;
+      object-fit: contain;
     }
 
     .home-title {
@@ -240,7 +229,7 @@
 
     /* ─── RESPONSIVE ─── */
     @media (max-width: 420px) {
-      .wave-logo { width: 60px; height: 60px; }
+      .wave-logo { width: 72px; height: 72px; }
       .home-title { font-size: 24px; }
       .code-input { width: 160px; height: 60px; font-size: 30px; letter-spacing: 12px; }
       .code-input::placeholder { font-size: 16px; }
@@ -258,11 +247,7 @@
   <!-- ─── HOME ─── -->
   <div class="screen active" id="homeScreen">
     <div class="wave-logo">
-      <div class="wave-bar"></div>
-      <div class="wave-bar"></div>
-      <div class="wave-bar"></div>
-      <div class="wave-bar"></div>
-      <div class="wave-bar"></div>
+      <img src="/icons/icon-audioshare.png" alt="audioShare" />
     </div>
     <h1 class="home-title">audioShare</h1>
     <p class="home-sub">Transmisi&oacute;n de audio en vivo</p>

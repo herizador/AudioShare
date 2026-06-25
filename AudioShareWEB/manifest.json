@@ -1,7 +1,7 @@
 {
-    "name": "Audio Share Romántico",
+    "name": "audioShare",
     "short_name": "AudioShare",
-    "description": "Comparte audio en tiempo real con tu pareja",
+    "description": "Transmisi\u00f3n de audio en tiempo real",
     "start_url": "./",
     "display": "standalone",
     "background_color": "#000000",
@@ -9,19 +9,19 @@
     "orientation": "portrait",
     "icons": [
         {
-            "src": "./icons/icon-192x192.png",
+            "src": "./icons/icon-audioshare.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "./icons/icon-512x512.png",
+            "src": "./icons/icon-audioshare.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "./icons/apple-touch-icon.png",
+            "src": "./icons/icon-audioshare.png",
             "sizes": "180x180",
             "type": "image/png",
             "purpose": "any"
@@ -36,4 +36,4 @@
             "description": "Conectar a una sala de audio"
         }
     ]
-} 
+}
