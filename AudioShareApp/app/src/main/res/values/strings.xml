@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">Audio Share</string>
+    
+    <!-- Main Activity -->
+    <string name="host_mode_title">🎭 Modo Host</string>
+    <string name="guest_mode_title">🎧 Modo Invitado</string>
+    <string name="host_description">Comparte el audio de tu dispositivo (requiere Android 10+)</string>
+    <string name="guest_description">Recibe y reproduce audio desde otro dispositivo</string>
+    <string name="start_host">Iniciar como Host</string>
+    <string name="connect_guest">Conectar como Invitado</string>
+    <string name="stop_sharing">Detener Compartir</string>
+    <string name="host_ip_hint">IP del Host</string>
+    <string name="host_ip_placeholder">192.168.1.100</string>
+    
+    <!-- Status Messages -->
+    <string name="status_disconnected">Desconectado</string>
+    <string name="status_configuring">Configurando...</string>
+    <string name="status_waiting_connections">Esperando conexiones...</string>
+    <string name="status_sharing_audio">Compartiendo audio...</string>
+    <string name="status_connected_to_host">Conectado al host</string>
+    <string name="status_receiving_audio">Recibiendo audio...</string>
+    
+    <!-- Error Messages -->
+    <string name="error_android_version">Requiere Android 10 o superior para funcionar como host</string>
+    <string name="error_permissions">Permisos requeridos para el funcionamiento</string>
+    <string name="error_media_projection">Permisos de captura de pantalla requeridos</string>
+    <string name="error_drm_content">Contenido protegido detectado - no se puede capturar</string>
+    <string name="error_audio_capture">Error configurando captura de audio</string>
+    <string name="error_connection_failed">No se pudo conectar al host</string>
+    <string name="error_connection_timeout">Timeout conectando al host</string>
+    <string name="error_audio_playback">Error configurando reproducción de audio</string>
+    <string name="error_network_lost">Conexión de red perdida</string>
+    
+    <!-- Info Messages -->
+    <string name="info_title">ℹ️ Información</string>
+    <string name="info_description">• El host debe tener Android 10+ para capturar audio del sistema\n• Los invitados pueden usar cualquier dispositivo Android/iOS\n• Ambos dispositivos deben estar en la misma red Wi-Fi\n• Contenido DRM (Netflix, etc.) puede no funcionar</string>
+    
+    <!-- Notifications -->
+    <string name="notification_title_host">Audio Share - Host Activo</string>
+    <string name="notification_title_guest">Audio Share - Invitado Conectado</string>
+    <string name="notification_text_host">Compartiendo audio del sistema</string>
+    <string name="notification_text_guest">Recibiendo audio compartido</string>
+    <string name="notification_action_stop">Detener</string>
+    
+    <!-- Network -->
+    <string name="your_ip">Tu IP: %s</string>
+    <string name="network_wifi_required">Se requiere conexión Wi-Fi</string>
+    <string name="network_same_network">Ambos dispositivos deben estar en la misma red</string>
+    
+    <!-- Permissions -->
+    <string name="permission_audio_title">Permiso de Audio</string>
+    <string name="permission_audio_description">Necesario para capturar y reproducir audio</string>
+    <string name="permission_network_title">Permiso de Red</string>
+    <string name="permission_network_description">Necesario para conectar dispositivos</string>
+    
+    <!-- Advanced Settings -->
+    <string name="settings_title">Configuración</string>
+    <string name="settings_audio_quality">Calidad de Audio</string>
+    <string name="settings_buffer_size">Tamaño de Buffer</string>
+    <string name="settings_port">Puerto de Conexión</string>
+    <string name="audio_quality_low">Baja (22kHz)</string>
+    <string name="audio_quality_medium">Media (44kHz)</string>
+    <string name="audio_quality_high">Alta (48kHz)</string>
+</resources>

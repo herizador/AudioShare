@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>audioShare</title>
+  <meta name="description" content="Transmisión de audio en tiempo real" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #000000;
+      color: #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+    input, button { font: inherit; border: none; outline: none; }
+
+    /* ─── Screens ─── */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%; height: 100%;
+      padding: 32px 24px;
+      position: absolute;
+      inset: 0;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      opacity: 0;
+    }
+    .screen.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* ─── HOME ─── */
+    #homeScreen { gap: 28px; }
+
+    .wave-logo {
+      width: 72px; height: 72px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 4px;
+    }
+    .wave-bar {
+      width: 4px;
+      border-radius: 2px;
+      background: linear-gradient(to top, #7C3AED, #A78BFA);
+      animation: waveAnim 1.4s ease-in-out infinite;
+    }
+    .wave-bar:nth-child(1) { height: 20px; animation-delay: 0s; }
+    .wave-bar:nth-child(2) { height: 34px; animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { height: 46px; animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { height: 34px; animation-delay: 0.45s; }
+    .wave-bar:nth-child(5) { height: 20px; animation-delay: 0.6s; }
+
+    @keyframes waveAnim {
+      0%, 100% { transform: scaleY(0.6); opacity: 0.5; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+
+    .home-title {
+      font-size: 28px; font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #FFFFFF;
+    }
+    .home-sub {
+      font-size: 14px; color: #475569;
+      margin-top: -12px; text-align: center;
+      font-weight: 400;
+    }
+
+    .code-input {
+      width: 180px; height: 68px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      font-size: 36px; font-weight: 700;
+      letter-spacing: 14px; text-align: center;
+      color: #FFFFFF;
+      caret-color: #7C3AED;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .code-input:focus {
+      border-color: rgba(124,58,237,0.4);
+      box-shadow: 0 0 24px rgba(124,58,237,0.08);
+    }
+    .code-input::placeholder {
+      letter-spacing: 4px;
+      font-size: 18px;
+      color: #1E293B;
+    }
+
+    .btn-join {
+      width: 100%; max-width: 320px; height: 54px;
+      border-radius: 9999px;
+      background: #7C3AED;
+      color: #FFFFFF;
+      font-size: 16px; font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.3s, opacity 0.2s;
+      box-shadow: 0 0 32px rgba(124,58,237,0.25);
+    }
+    .btn-join:active { transform: scale(0.96); }
+    .btn-join:disabled { opacity: 0.25; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ─── ROOM ─── */
+    #roomScreen {
+      justify-content: center;
+      gap: 0;
+      padding: 48px 24px 32px;
+    }
+
+    .room-status {
+      position: absolute;
+      top: 48px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 13px; font-weight: 500; color: #475569;
+      letter-spacing: 0.2px;
+      transition: color 0.4s;
+      padding: 0 24px;
+    }
+    .room-status.listening { color: #A78BFA; }
+    .room-status.error { color: #EF4444; }
+    .room-status.reconnecting { color: #F59E0B; }
+
+    /* Visualizer */
+    .visualizer-wrap {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      width: 100%;
+    }
+    #visualizer {
+      width: 240px; height: 240px;
+      border-radius: 50%;
+    }
+
+    .vis-meta {
+      text-align: center;
+      font-size: 12px; color: #334155;
+      margin-top: -8px; margin-bottom: 16px;
+      min-height: 18px;
+      font-weight: 400;
+    }
+
+    .btn-leave {
+      width: 100%; max-width: 320px; height: 48px;
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #EF4444;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-leave:active { background: rgba(239,68,68,0.06); transform: scale(0.97); }
+
+    /* ─── RECONNECT MODAL ─── */
+    #reconnectOverlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 20px;
+    }
+    #reconnectOverlay.active { display: flex; }
+
+    .reconnect-spinner {
+      width: 36px; height: 36px;
+      border: 2.5px solid rgba(124,58,237,0.1);
+      border-top-color: #7C3AED;
+      border-radius: 50%;
+      animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .reconnect-label {
+      font-size: 15px; color: #94A3B8;
+      font-weight: 500;
+    }
+    .reconnect-timer {
+      font-size: 13px; color: #475569;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── HOST ENDED MODAL ─── */
+    #hostEndedModal {
+      display: none;
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+      padding: 32px;
+    }
+    #hostEndedModal.active { display: flex; }
+
+    .modal-icon {
+      font-size: 36px; line-height: 1;
+      opacity: 0.5;
+    }
+    .modal-title {
+      font-size: 18px; font-weight: 600;
+      color: #E2E8F0;
+      text-align: center;
+    }
+    .modal-sub {
+      font-size: 14px; color: #64748B;
+      text-align: center;
+      max-width: 260px;
+      line-height: 1.5;
+    }
+    .btn-home {
+      margin-top: 8px;
+      width: 200px; height: 48px;
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #E2E8F0;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-home:active { background: rgba(255,255,255,0.1); transform: scale(0.97); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 420px) {
+      .wave-logo { width: 60px; height: 60px; }
+      .home-title { font-size: 24px; }
+      .code-input { width: 160px; height: 60px; font-size: 30px; letter-spacing: 12px; }
+      .code-input::placeholder { font-size: 16px; }
+      #visualizer { width: 180px; height: 180px; }
+      .room-status { top: 36px; font-size: 12px; }
+    }
+
+    @media (min-width: 768px) {
+      #visualizer { width: 300px; height: 300px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── HOME ─── -->
+  <div class="screen active" id="homeScreen">
+    <div class="wave-logo">
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+    </div>
+    <h1 class="home-title">audioShare</h1>
+    <p class="home-sub">Transmisi&oacute;n de audio en vivo</p>
+    <input class="code-input" id="roomCodeInput" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off" />
+    <button class="btn-join" id="joinBtn" disabled>Unirse a la transmisi&oacute;n</button>
+  </div>
+
+  <!-- ─── ROOM ─── -->
+  <div class="screen" id="roomScreen">
+    <div class="room-status" id="roomStatus">Conectando...</div>
+    <div class="visualizer-wrap">
+      <canvas id="visualizer" width="300" height="300"></canvas>
+    </div>
+    <div class="vis-meta" id="visualizerLabel">Esperando audio...</div>
+    <button class="btn-leave" id="leaveBtn">Abandonar transmisi&oacute;n</button>
+  </div>
+
+  <!-- ─── RECONNECT MODAL ─── -->
+  <div id="reconnectOverlay">
+    <div class="reconnect-spinner"></div>
+    <div class="reconnect-label">Intentando reconectar...</div>
+    <div class="reconnect-timer" id="reconnectTimer">10s</div>
+  </div>
+
+  <!-- ─── HOST ENDED MODAL ─── -->
+  <div id="hostEndedModal">
+    <div class="modal-icon">&#9834;</div>
+    <div class="modal-title">La transmisi&oacute;n ha terminado</div>
+    <div class="modal-sub">Gracias por escuchar.</div>
+    <button class="btn-home" id="backHomeBtn">Volver al inicio</button>
+  </div>
+
+  <script>
+    // ─── Config ───
+    // __PROXY_URL__ es reemplazado en build por replace-env.js
+    // Fallback hardcodeado igual que Android (https://proxy-audio-share.onrender.com)
+    const PROXY_URL = (() => {
+      const raw = "__PROXY_URL__";
+      if (!raw.startsWith("__")) return raw;
+      // Intenta usar la misma URL base si la PWA y el proxy están en el mismo host
+      const self = `${location.protocol}//${location.host}`;
+      // Evita conectarse a sí misma si no es el proxy real
+      if (location.hostname !== "proxy-audio-share.onrender.com") {
+        return "https://proxy-audio-share.onrender.com";
+      }
+      return self;
+    })();
+
+    function getSignalingWsUrl(roomCode) {
+      const base = PROXY_URL;
+      const wsBase = base.replace(/^http:/, "ws:").replace(/^https:/, "wss:");
+      return `${wsBase}/ws?role=pwa&room=${encodeURIComponent(roomCode)}`;
+    }
+    const RECONNECT_TIMEOUT = 10000;
+
+    // ─── DOM ───
+    const homeScreen = document.getElementById("homeScreen");
+    const roomScreen = document.getElementById("roomScreen");
+    const roomCodeInput = document.getElementById("roomCodeInput");
+    const joinBtn = document.getElementById("joinBtn");
+    const roomStatus = document.getElementById("roomStatus");
+    const leaveBtn = document.getElementById("leaveBtn");
+    const canvas = document.getElementById("visualizer");
+    const ctx = canvas.getContext("2d");
+    const reconnectOverlay = document.getElementById("reconnectOverlay");
+    const reconnectTimer = document.getElementById("reconnectTimer");
+    const visualizerLabel = document.getElementById("visualizerLabel");
+    const hostEndedModal = document.getElementById("hostEndedModal");
+    const backHomeBtn = document.getElementById("backHomeBtn");
+
+    // ─── State ───
+    let signalingWs = null;
+    let audioCtx = null;
+    let audioWorkletNode = null;
+    let audioLevel = 0;
+    let isPlaying = false;
+    let reconnectStart = 0;
+    let reconnectTimerId = null;
+    let animFrameId = null;
+    let hostDisconnected = false;
+    let currentRoomCode = "";
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = canvas.offsetWidth * dpr;
+    canvas.height = canvas.offsetHeight * dpr;
+    ctx.scale(dpr, dpr);
+
+    // ─── Input validation ───
+    roomCodeInput.addEventListener("input", () => {
+      roomCodeInput.value = roomCodeInput.value.replace(/\D/g, "").slice(0, 4);
+      joinBtn.disabled = roomCodeInput.value.length !== 4;
+    });
+    roomCodeInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !joinBtn.disabled) joinBtn.click();
+    });
+
+    // ─── Navigation ───
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    // ─── Visualizer ───
+    function drawVisualizer(level) {
+      const w = 300, h = 300;
+      const cx = w / 2, cy = h / 2;
+      const maxR = 120;
+      const baseR = 14;
+      const r = baseR + (maxR - baseR) * Math.min(level * 1.8, 1);
+      const alpha = Math.min(level * 2.5, 1);
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Outer glow rings
+      if (alpha > 0.02) {
+        for (let i = 5; i >= 1; i--) {
+          const ringR = r + i * 12;
+          ctx.beginPath();
+          ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(124, 58, 237, ${0.035 * alpha / i})`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+      }
+
+      // Gradient fill
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      grad.addColorStop(0, `rgba(124, 58, 237, ${0.3 * alpha})`);
+      grad.addColorStop(0.5, `rgba(124, 58, 237, ${0.12 * alpha})`);
+      grad.addColorStop(1, `rgba(124, 58, 237, ${0.02 * alpha})`);
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Border glow
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(167, 139, 250, ${0.2 + 0.5 * alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Outer subtle ring
+      if (alpha > 0.02) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(167, 139, 250, ${0.08 * alpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      // Center dot
+      if (alpha > 0.02) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(167, 139, 250, ${0.4 + 0.6 * alpha})`;
+        ctx.fill();
+      }
+    }
+
+    function startAnimation() {
+      function frame() {
+        drawVisualizer(audioLevel);
+        animFrameId = requestAnimationFrame(frame);
+      }
+      frame();
+    }
+
+    function stopAnimation() {
+      if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+      audioLevel = 0;
+      drawVisualizer(0);
+    }
+
+    // ─── Audio Worklet ───
+    async function setupAudio() {
+      if (audioCtx) {
+        if (audioCtx.state === "suspended") await audioCtx.resume();
+        return;
+      }
+
+      try {
+        audioCtx = new AudioContext({ sampleRate: 44100 });
+      } catch {
+        audioCtx = new AudioContext();
+      }
+      console.log("AudioContext sampleRate:", audioCtx.sampleRate);
+
+      try {
+        await audioCtx.audioWorklet.addModule("audio-processor.js");
+      } catch (err) {
+        console.warn("AudioWorklet no disponible:", err);
+      }
+
+      if (audioCtx.audioWorklet && typeof AudioWorkletNode !== "undefined") {
+        audioWorkletNode = new AudioWorkletNode(audioCtx, "audio-processor", {
+          numberOfInputs: 0,
+          numberOfOutputs: 1,
+          outputChannelCount: [1],
+        });
+
+        audioWorkletNode.port.onmessage = (ev) => {
+          if (ev.data.type === "level") {
+            audioLevel = ev.data.value;
+          }
+        };
+
+        audioWorkletNode.connect(audioCtx.destination);
+      }
+
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+      isPlaying = true;
+    }
+
+    function feedAudioPCM(data) {
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().then(() => console.log("AudioContext resumido en feedAudioPCM"));
+      }
+      const samples = new Int16Array(data);
+      const floatSamples = new Float32Array(samples.length);
+      for (let i = 0; i < samples.length; i++) {
+        floatSamples[i] = samples[i] / 32768;
+      }
+      if (audioWorkletNode) {
+        audioWorkletNode.port.postMessage({ type: "samples", samples: floatSamples });
+      }
+    }
+
+    function suspendAudio() {
+      isPlaying = false;
+      if (audioCtx) {
+        audioCtx.suspend().catch(() => {});
+      }
+      audioLevel = 0;
+    }
+
+    // ─── Signaling + Audio (PCM directo por WS) ───
+    function connectToRoom(roomCode) {
+      hostDisconnected = false;
+      currentRoomCode = roomCode;
+      hostEndedModal.classList.remove("active");
+      showScreen("roomScreen");
+      setStatus("Conectando...", "");
+
+      const url = getSignalingWsUrl(roomCode);
+      signalingWs = new WebSocket(url);
+
+      signalingWs.binaryType = "arraybuffer";
+
+      signalingWs.onopen = () => {
+        setStatus("Conectando...", "");
+      };
+
+      signalingWs.onmessage = async (ev) => {
+        if (ev.data instanceof ArrayBuffer) {
+          feedAudioPCM(ev.data);
+          return;
+        }
+
+        try {
+          const msg = JSON.parse(ev.data);
+
+          switch (msg.type) {
+            case "ready":
+              setStatus("Conectado al host. Escuchando audio en tiempo real.", "listening");
+              visualizerLabel.textContent = "Transmisi\u00f3n en vivo";
+              startAnimation();
+              await setupAudio();
+              break;
+
+            case "host_disconnected":
+              hostDisconnected = true;
+              suspendAudio();
+              stopAnimation();
+              cleanupConnection();
+              hostEndedModal.classList.add("active");
+              break;
+
+            case "error":
+              if (msg.message === "no_host") {
+                setStatus("No hay nadie transmitiendo en esta sala", "error");
+                setTimeout(() => showScreen("homeScreen"), 2000);
+              }
+              break;
+          }
+        } catch (err) {
+          console.warn("WS mensaje no procesado:", ev.data, err);
+        }
+      };
+
+      signalingWs.onclose = (e) => {
+        if (hostDisconnected) return;
+        if (e.code === 4002 || e.reason === "no_host") {
+          setStatus("No hay nadie transmitiendo en esta sala", "error");
+          setTimeout(() => showScreen("homeScreen"), 2000);
+          return;
+        }
+        startReconnection(roomCode);
+      };
+
+      signalingWs.onerror = () => {
+        startReconnection(roomCode);
+      };
+    }
+
+    // ─── Reconnection ───
+    let reconnectCode = "";
+    let reconnectAttempts = 0;
+
+    function startReconnection(roomCode) {
+      if (hostDisconnected) return;
+
+      if (reconnectAttempts === 0) {
+        reconnectStart = Date.now();
+        reconnectCode = roomCode;
+      }
+      reconnectAttempts++;
+
+      const elapsed = Date.now() - reconnectStart;
+      if (elapsed >= RECONNECT_TIMEOUT) {
+        reconnectAttempts = 0;
+        reconnectOverlay.classList.remove("active");
+        hostDisconnected = true;
+        suspendAudio();
+        stopAnimation();
+        cleanupConnection();
+        hostEndedModal.classList.add("active");
+        return;
+      }
+
+      reconnectOverlay.classList.add("active");
+      setStatus("Intentando reconectar...", "reconnecting");
+      clearInterval(reconnectTimerId);
+
+      reconnectTimerId = setInterval(() => {
+        const e = Date.now() - reconnectStart;
+        const remaining = Math.max(0, Math.ceil((RECONNECT_TIMEOUT - e) / 1000));
+        reconnectTimer.textContent = `${remaining}s`;
+        if (e >= RECONNECT_TIMEOUT) {
+          clearInterval(reconnectTimerId);
+          reconnectAttempts = 0;
+          reconnectOverlay.classList.remove("active");
+          hostDisconnected = true;
+          suspendAudio();
+          stopAnimation();
+          cleanupConnection();
+          hostEndedModal.classList.add("active");
+        }
+      }, 200);
+
+      setTimeout(() => {
+        if (!hostDisconnected && (Date.now() - reconnectStart) < RECONNECT_TIMEOUT) {
+          cleanupConnection();
+          reconnectOverlay.classList.remove("active");
+          clearInterval(reconnectTimerId);
+          connectToRoom(reconnectCode);
+        }
+      }, 2000);
+    }
+
+    // ─── Cleanup ───
+    function cleanupConnection() {
+      if (signalingWs) { signalingWs.onclose = null; signalingWs.close(); signalingWs = null; }
+      if (audioWorkletNode) {
+        audioWorkletNode.port.postMessage({ type: "reset" });
+      }
+      suspendAudio();
+      stopAnimation();
+    }
+
+    // ─── UI helpers ───
+    function setStatus(text, type) {
+      roomStatus.innerHTML = text;
+      roomStatus.className = "room-status" + (type ? " " + type : "");
+    }
+
+    // ─── Join ───
+    joinBtn.addEventListener("click", async () => {
+      if (audioCtx && audioCtx.state === "suspended") {
+        await audioCtx.resume();
+        console.log("AudioContext reactivado por el usuario:", audioCtx.state);
+      }
+      const code = roomCodeInput.value.trim();
+      if (code.length === 4) connectToRoom(code);
+    });
+
+    // ─── Leave ───
+    leaveBtn.addEventListener("click", () => {
+      hostDisconnected = true;
+      hostEndedModal.classList.remove("active");
+      cleanupConnection();
+      showScreen("homeScreen");
+      setStatus("", "");
+      roomCodeInput.value = "";
+      joinBtn.disabled = true;
+    });
+
+    // ─── Host ended → go home ───
+    backHomeBtn.addEventListener("click", () => {
+      hostEndedModal.classList.remove("active");
+      showScreen("homeScreen");
+    });
+
+    // ─── Init animation ───
+    drawVisualizer(0);
+
+    // ─── Service Worker ───
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+    }
+
+    console.log("audioShare PWA — WebRTC + Premium UI");
+  </script>
+</body>
+</html>

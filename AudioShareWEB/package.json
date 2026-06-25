@@ -1,0 +1,12 @@
+{
+  "name": "audio-share-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "audioShare PWA cliente",
+  "scripts": {
+    "build": "node replace-env.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
